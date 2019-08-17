@@ -13,10 +13,22 @@ services:
     privileged: true
     ulimits:
       core: 99999999999
-    environment:
-      GOOGLE_APPLICATION_CREDENTIALS: /key.json
-    env_file:
-      - php/.env
     volumes:
-      - ${GOOGLE_APPLICATION_CREDENTIALS}:/key.json:ro
       - ./php:/src
+    links:
+      - redis-cluster
+      - redis0
+      - redis1
+      - redis2
+
+  redis-cluster:
+    image: grokzen/redis-cluster
+
+  redis0:
+    image: redis
+
+  redis1:
+    image: redis
+
+  redis2:
+    image: redis

@@ -1,9 +1,22 @@
-FROM axot/php:7.2.21-fpm-alpine10-debug
+FROM php:7.2.21-fpm-alpine3.10
+# FROM axot/php:7.2.21-fpm-alpine10-debug
 
-RUN apk add --no-cache --virtual=.build-deps zlib-dev autoconf gcc g++ make \
-  && pecl install grpc protobuf opencensus-alpha apcu igbinary xdebug \
+RUN set -ex \
+  && apk add --no-cache --virtual=.build-deps zlib-dev autoconf gcc g++ make \
+  && _pecl_install_nproc () {                  \
+  pkg=$1;                                      \
+  shift;                                       \
+  pecl install --onlyreqdeps --nobuild $pkg;   \
+  cd "$(pecl config-get temp_dir)/${pkg%-*}";  \
+  phpize;                                      \
+  ./configure "$@";                            \
+  make -j $(nproc) && make install;            \
+  cd -;                                        \
+  }                                            \
+  && pecl install apcu igbinary msgpack xdebug \
+  && _pecl_install_nproc redis --enable-redis-igbinary --enable-redis-msgpack \
   && docker-php-ext-install sysvshm opcache \
-  && docker-php-ext-enable grpc protobuf opencensus apcu igbinary xdebug \
+  && docker-php-ext-enable apcu xdebug redis igbinary msgpack \
   && apk del .build-deps \
   && apk del *-dev
 

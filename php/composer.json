@@ -1,17 +1,14 @@
 {
-    "name": "castaneai/php",
+    "name": "axot/php",
     "type": "project",
     "license": "MIT",
     "authors": [
         {
-            "name": "castaneai",
-            "email": "castaneai@castaneai.net"
+            "name": "axot",
+            "email": "axot@msn.com"
         }
     ],
     "require": {
-        "google/cloud-spanner": "^1.11",
-        "opencensus/opencensus": "~0.2",
-        "symfony/cache": "^4.1",
-        "opencensus/opencensus-exporter-stackdriver": "~0.1"
+        "ext-redis": "*"
     }
 }
