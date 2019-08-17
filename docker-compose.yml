@@ -10,6 +10,9 @@ services:
 
   php:
     build: php/
+    privileged: true
+    ulimits:
+      core: 99999999999
     environment:
       GOOGLE_APPLICATION_CREDENTIALS: /key.json
     env_file:
