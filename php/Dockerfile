@@ -1,4 +1,4 @@
-FROM php:7.2-fpm-alpine
+FROM php:7.2.19-fpm-alpine
 
 RUN apk add --no-cache --virtual=.build-deps zlib-dev autoconf gcc g++ make \
   && pecl install grpc protobuf opencensus-alpha apcu igbinary xdebug \
@@ -14,6 +14,7 @@ COPY composer.lock /tmp/composer.lock
 ENV COMPOSER_ALLOW_SUPERUSER 1
 RUN composer install --no-scripts --no-autoloader -d /tmp
 
+COPY www.conf /usr/local/etc/php-fpm.d/www.conf
 COPY . /src
 WORKDIR /src
 

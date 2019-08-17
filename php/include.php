@@ -1,11 +1,11 @@
 <?php
-require __DIR__.'/vendor/autoload.php';
+require __DIR__ . '/vendor/autoload.php';
 
-use Google\Cloud\Spanner\SpannerClient;
-use Google\Cloud\Spanner\Session\SessionPoolInterface;
-use Psr\Cache\CacheItemPoolInterface;
-use Google\Cloud\Spanner\Session\CacheSessionPool;
 use Google\Auth\Cache\SysVCacheItemPool;
+use Google\Cloud\Spanner\Session\CacheSessionPool;
+use Google\Cloud\Spanner\Session\SessionPoolInterface;
+use Google\Cloud\Spanner\SpannerClient;
+use Psr\Cache\CacheItemPoolInterface;
 use Symfony\Component\Cache\Adapter\FilesystemAdapter;
 
 function startTrace()
@@ -19,14 +19,14 @@ function startTrace()
     opencensus_trace_method(\Google\ApiCore\Transport\GrpcTransport::class, '__construct', function ($baseStub, $hostname, $opts, $channel) {
         return [
             'attributes' => [
-                'backtrace' => json_encode(array_map(function($t) { return "${t['file']}:${t['line']}"; }, debug_backtrace())),
+                'backtrace' => json_encode(array_map(function ($t) {return "${t['file']}:${t['line']}";}, debug_backtrace())),
                 'hostname' => $hostname,
                 'opts' => json_encode($opts),
                 'channel' => json_encode($channel),
             ],
         ];
     });
-    opencensus_trace_method(\Google\Cloud\Spanner\Database::class, 'execute', function($db, $sql) {
+    opencensus_trace_method(\Google\Cloud\Spanner\Database::class, 'execute', function ($db, $sql) {
         return [
             'attributes' => [
                 'sql' => $sql,
@@ -34,7 +34,7 @@ function startTrace()
         ];
     });
 
-    opencensus_trace_method(\Grpc\Call::class, 'startBatch', function($call, $batch) {
+    opencensus_trace_method(\Grpc\Call::class, 'startBatch', function ($call, $batch) {
         return [
             'attributes' => [
                 'batch' => json_encode($batch),
@@ -61,6 +61,7 @@ function spannerClientContext(Closure $func, CacheItemPoolInterface $authCache =
     }
     $spannerClientOptions = [
         'authCache' => $authCache,
+        'requestTimeout' => 1,
     ];
     $spanner = new SpannerClient($spannerClientOptions);
 
@@ -69,11 +70,11 @@ function spannerClientContext(Closure $func, CacheItemPoolInterface $authCache =
 
 function spannerDbContext(Closure $func, CacheItemPoolInterface $authCache = null, SessionPoolInterface $sessionPool = null)
 {
-    return spannerClientContext(function(SpannerClient $client, $instanceId, $databaseId) use ($sessionPool, $func) {
+    return spannerClientContext(function (SpannerClient $client, $instanceId, $databaseId) use ($sessionPool, $func) {
         if ($sessionPool === null) {
-            $sessionCacheItemPool = new FilesystemAdapter('spanner-session', 0, __DIR__.'/cache');
+            $sessionCacheItemPool = new FilesystemAdapter('spanner-session', 0, __DIR__ . '/cache');
             $sessionPool = new CacheSessionPool($sessionCacheItemPool, [
-                'minSession' => 10,
+                'minSession' => 100,
             ]);
         }
         $databaseOptions = [
